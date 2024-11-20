@@ -1,6 +1,7 @@
 import subprocess, os, json, requests, time
 from selenium import webdriver
 import urllib.request
+import boto3
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -30,6 +31,11 @@ chrome_options = webdriver.ChromeOptions()
 chrome_options.add_experimental_option("debuggerAddress", f"127.0.0.1:9222")
 driver = webdriver.Chrome(options=chrome_options)
 
+# --------------------------------------Initialize Selenium--------------------------------------
+
+s3 = boto3.client('s3')
+BUCKET_NAME = 'mjjgallery'
+
 # --------------------------------------Start Scraping--------------------------------------
 
 TARGET_URL = "https://www.midjourney.com/explore?tab=top"
@@ -37,11 +43,7 @@ driver.get(TARGET_URL)
 
 time.sleep(5)
 
-# Function to scroll to the bottom of the page
-def scroll_to_bottom():
-    driver.find_element(By.TAG_NAME, "body").send_keys(Keys.PAGE_DOWN)
-
-# Function to download an image
+# Download an image
 def download_image(url, file_path):
     req = urllib.request.Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
@@ -63,7 +65,16 @@ def download_image(url, file_path):
                 file.write(response.read())
             break
 
-# Infinite scroll and scrape
+
+# Upload an image to S3
+def upload_to_s3(file_path, bucket_name, object_name):
+    try:
+        s3.upload_file(file_path, bucket_name, object_name, ExtraArgs={
+                'ContentType': 'image/jpeg',
+            })
+        print(f"Uploaded {file_path} to {bucket_name}/{object_name}")
+    except Exception as e:
+        print(f"Error uploading {file_path} to S3: {e}")
 
 first_job_cards = driver.find_element(By.XPATH, "//div[contains(@class, 'container/jobCard')]")
 first_job_cards.click()
@@ -112,10 +123,11 @@ while True:
         json.dump(data, f, indent=4)
 
     # Download the image
-    # file_path = f"data/images/{job_id}.jpg"
-    # download_image(jpg_url, file_path)
+    file_path = f"data/images/{job_id}.jpg"
+    download_image(jpg_url, file_path)
 
-
+    # Upload the image to S3
+    upload_to_s3(file_path, BUCKET_NAME, f"{job_id}.jpg")
 
 
     print("---------------------------------\n")
