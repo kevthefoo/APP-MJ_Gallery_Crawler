@@ -107,17 +107,17 @@ while True:
             "prompt": prompt,
             "tags": [_.text.replace("\n", "").strip() for _ in tags],
             "webp_url": webp_url,
-            "jpg_url": jpg_url
+            "jpg_url": jpg_url,
         }
         json.dump(data, f, indent=4)
 
     # Download the image
-    file_path = f"data/images/{job_id}.jpg"
-    download_image(jpg_url, file_path)
+    # file_path = f"data/images/{job_id}.jpg"
+    # download_image(jpg_url, file_path)
 
 
 
 
     print("---------------------------------\n")
     body.send_keys(Keys.ARROW_RIGHT)
-    time.sleep(5)
+    time.sleep(3)
