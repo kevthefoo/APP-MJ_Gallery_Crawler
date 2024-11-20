@@ -1,5 +1,6 @@
 import subprocess, os, json, requests, time
 from selenium import webdriver
+import urllib.request
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -40,6 +41,28 @@ time.sleep(5)
 def scroll_to_bottom():
     driver.find_element(By.TAG_NAME, "body").send_keys(Keys.PAGE_DOWN)
 
+# Function to download an image
+def download_image(url, file_path):
+    req = urllib.request.Request(url)
+    req.add_header('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
+    req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7')
+    req.add_header('Accept-Language', 'en-US,en;q=0.9')
+    req.add_header('authority', 'cdn.midjourney.com')
+
+    attempt = 0
+    for attempt in range(15):
+        try:
+            response = urllib.request.urlopen(req)
+        except:
+            print('System: Request failed...\n')
+            attempt += 1
+            time.sleep(5)
+        else:
+            print(f"System: Try {attempt+1} times to get the image...\n")  
+            with open(file_path, 'wb') as file:
+                file.write(response.read())
+            break
+
 # Infinite scroll and scrape
 
 first_job_cards = driver.find_element(By.XPATH, "//div[contains(@class, 'container/jobCard')]")
@@ -47,8 +70,6 @@ first_job_cards.click()
 time.sleep(5)
 body = driver.find_element(By.TAG_NAME, "body")
 time.sleep(5)
-
-
 
 while True:
     # Find the image URLs and Job ID
@@ -90,9 +111,9 @@ while True:
         }
         json.dump(data, f, indent=4)
 
-
-
-
+    # Download the image
+    file_path = f"data/images/{job_id}.jpg"
+    download_image(jpg_url, file_path)
 
 
 
@@ -100,4 +121,3 @@ while True:
     print("---------------------------------\n")
     body.send_keys(Keys.ARROW_RIGHT)
     time.sleep(5)
-
