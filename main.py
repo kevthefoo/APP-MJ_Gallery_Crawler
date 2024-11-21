@@ -13,6 +13,8 @@ load_dotenv()
 # Load Driver's Configuration
 CHROME_PATH = os.getenv("CHROME_BROWSER_PATH")
 USER_PROFILE_PATH = os.getenv("USER_PROFILE_PATH")
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
 # Launch Chrome in debug mode
 try:
@@ -33,8 +35,8 @@ driver = webdriver.Chrome(options=chrome_options)
 
 # --------------------------------------Initialize Selenium--------------------------------------
 
-s3 = boto3.client('s3')
-BUCKET_NAME = 'mjjgallery'
+s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+BUCKET_NAME = 'mjgallery'
 
 # --------------------------------------Start Scraping--------------------------------------
 
