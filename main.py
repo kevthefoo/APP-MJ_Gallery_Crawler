@@ -132,4 +132,4 @@ while True:
 
     print("---------------------------------\n")
     body.send_keys(Keys.ARROW_RIGHT)
-    time.sleep(3)
+    time.sleep(60)
