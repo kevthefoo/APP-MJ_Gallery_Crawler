@@ -125,11 +125,11 @@ while True:
         json.dump(data, f, indent=4)
 
     # Download the image
-    file_path = f"data/images/{job_id}.jpg"
-    download_image(jpg_url, file_path)
+    file_path = f"data/images/{job_id}.webp"
+    download_image(webp_url, file_path)
 
     # Upload the image to S3
-    upload_to_s3(file_path, BUCKET_NAME, f"{job_id}.jpg")
+    upload_to_s3(file_path, BUCKET_NAME, f"{job_id}.webp")
 
 
     print("---------------------------------\n")
