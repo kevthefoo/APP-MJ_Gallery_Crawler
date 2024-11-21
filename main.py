@@ -69,10 +69,11 @@ def download_image(url, file_path):
 
 
 # Upload an image to S3
-def upload_to_s3(file_path, bucket_name, object_name):
+def upload_to_s3(file_path, bucket_name, object_name, metadata):
     try:
         s3.upload_file(file_path, bucket_name, object_name, ExtraArgs={
                 'ContentType': 'image/jpeg',
+                'Metadata': metadata
             })
         print(f"Uploaded {file_path} to {bucket_name}/{object_name}")
     except Exception as e:
@@ -128,10 +129,21 @@ while True:
     file_path = f"data/images/{job_id}.webp"
     download_image(webp_url, file_path)
 
+    metadata={
+        "job_id": job_id,
+        "prompt": prompt,
+        "tags": ','.join([_.text.replace("\n", "").strip() for _ in tags],),
+        "webp_url": webp_url,
+        "jpg_url": jpg_url,
+    }
+
     # Upload the image to S3
-    upload_to_s3(file_path, BUCKET_NAME, f"{job_id}.webp")
+    upload_to_s3(file_path, BUCKET_NAME, f"{job_id}.webp", metadata)
 
 
     print("---------------------------------\n")
     body.send_keys(Keys.ARROW_RIGHT)
-    time.sleep(60)
+
+    for second in range(60):
+        print(f"System: Please wait for {60-second} seconds...")
+        time.sleep(1)
