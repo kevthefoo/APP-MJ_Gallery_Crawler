@@ -1,4 +1,4 @@
-import subprocess, os, json, requests, time
+import subprocess, os, json, requests, time, datetime
 from selenium import webdriver
 import urllib.request
 import boto3
@@ -69,10 +69,10 @@ def download_image(url, file_path):
 
 
 # Upload an image to S3
-def upload_to_s3(file_path, bucket_name, object_name, metadata):
+def upload_to_s3(file_path, bucket_name, object_name, metadata, file_type):
     try:
         s3.upload_file(file_path, bucket_name, object_name, ExtraArgs={
-                'ContentType': 'image/jpeg',
+                'ContentType': f'image/{file_type}',
                 'Metadata': metadata
             })
         print(f"Uploaded {file_path} to {bucket_name}/{object_name}")
@@ -85,6 +85,9 @@ time.sleep(5)
 body = driver.find_element(By.TAG_NAME, "body")
 time.sleep(5)
 
+# Get today's date
+date = datetime.date.today().strftime("%Y-%m-%d")
+ 
 while True:
     # Find the image URLs and Job ID
     images = driver.find_elements(By.CSS_SELECTOR, "img.absolute.w-full.h-full")
@@ -125,10 +128,6 @@ while True:
         }
         json.dump(data, f, indent=4)
 
-    # Download the image
-    file_path = f"data/images/{job_id}.webp"
-    download_image(webp_url, file_path)
-
     metadata={
         "job_id": job_id,
         "prompt": prompt,
@@ -137,9 +136,23 @@ while True:
         "jpg_url": jpg_url,
     }
 
-    # Upload the image to S3
-    upload_to_s3(file_path, BUCKET_NAME, f"{job_id}.webp", metadata)
+    # Download the webp image
+    file_path = f"data/images/{job_id}.webp"
+    download_image(webp_url, file_path)
 
+    # Upload the image to S3
+    upload_to_s3(file_path, BUCKET_NAME, f"{date}/{job_id}/{job_id}.webp", metadata, file_type="webp")
+
+    for second in range(20):
+        print(f"System: Please wait for {20-second} seconds...")
+        time.sleep(1)
+
+    # Download the jpeg image
+    file_path = f"data/images/{job_id}.jpg"
+    download_image(jpg_url, file_path)
+
+    # Upload the image to S3
+    upload_to_s3(file_path, BUCKET_NAME, f"{date}/{job_id}/{job_id}.jpg", metadata, file_type="jpeg")
 
     print("---------------------------------\n")
     body.send_keys(Keys.ARROW_RIGHT)
