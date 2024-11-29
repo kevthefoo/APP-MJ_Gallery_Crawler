@@ -72,14 +72,15 @@ def download_image(url, file_path):
 
 # Upload an image to S3
 def upload_to_s3(file_path, bucket_name, object_name, metadata, file_type):
+    print(object_name)
     try:
         s3.upload_file(file_path, bucket_name, object_name, ExtraArgs={
                 'ContentType': f'image/{file_type}',
                 'Metadata': metadata
             })
-        print(f"Uploaded {file_path} to {bucket_name}/{object_name}")
+        print(f"Uploaded {file_path} to {bucket_name}/{object_name}\n")
     except Exception as e:
-        print(f"Error uploading {file_path} to S3: {e}")
+        print(f"Error uploading {file_path} to S3: {e}\n")
 
 first_job_cards = driver.find_element(By.XPATH, "//div[contains(@class, 'container/jobCard')]")
 first_job_cards.click()
@@ -146,7 +147,7 @@ while True:
     download_image(webp_url, file_path)
 
     # Upload the image to S3
-    upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}/{job_id}.webp", metadata, file_type="webp")
+    upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.webp", metadata, file_type="webp")
 
     for second in range(20):
         print(f"System: Please wait for {20-second} seconds...")
@@ -157,7 +158,7 @@ while True:
     download_image(jpg_url, file_path)
 
     # Upload the image to S3
-    upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}/{job_id}.jpg", metadata, file_type="jpeg")
+    upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.jpg", metadata, file_type="jpeg")
 
     print("---------------------------------\n")
     body.send_keys(Keys.ARROW_RIGHT)

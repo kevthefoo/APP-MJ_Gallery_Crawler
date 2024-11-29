@@ -1,1 +1,12 @@
-{}
+{
+    "c5a714c5-69f5-4c42-b999-76a8fcff0bc6": {
+        "job_id": "c5a714c5-69f5-4c42-b999-76a8fcff0bc6",
+        "prompt": "Olives and leaves twisting around glass olive oil bottle on green packground in the center, ad style, hyper realistic, 4k,",
+        "tags": [
+            "--ar 4:3",
+            "--v 6.1"
+        ],
+        "webp_url": "https://cdn.midjourney.com/c5a714c5-69f5-4c42-b999-76a8fcff0bc6/0_0_384_N.webp?method=shortest&qst=6&quality=15",
+        "jpg_url": "https://cdn.midjourney.com/c5a714c5-69f5-4c42-b999-76a8fcff0bc6/0_0.jpeg"
+    }
+}
