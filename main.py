@@ -72,7 +72,7 @@ def download_image(url, file_path):
 
 # Upload an image to S3
 def upload_to_s3(file_path, bucket_name, object_name, metadata, file_type):
-    print(object_name)
+    
     try:
         s3.upload_file(file_path, bucket_name, object_name, ExtraArgs={
                 'ContentType': f'image/{file_type}',
