@@ -6,6 +6,8 @@ import boto3
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
+from lib.reverseTimestamp import generate_reverse_timestamped_filename
+
 # Load the environment variables from the .env file (For local enviroment)
 from dotenv import load_dotenv
 load_dotenv()
@@ -15,6 +17,7 @@ CHROME_PATH = os.getenv("CHROME_BROWSER_PATH")
 USER_PROFILE_PATH = os.getenv("USER_PROFILE_PATH")
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+BUCKET_NAME = os.getenv('BUCKET_NAME')
 
 # Launch Chrome in debug mode
 try:
@@ -36,7 +39,6 @@ driver = webdriver.Chrome(options=chrome_options)
 # --------------------------------------Initialize Selenium--------------------------------------
 
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-BUCKET_NAME = 'mjgallery'
 
 # --------------------------------------Start Scraping--------------------------------------
 
@@ -136,12 +138,15 @@ while True:
         "jpg_url": jpg_url,
     }
 
+
+    reverse_timestamp = generate_reverse_timestamped_filename()
+
     # Download the webp image
     file_path = f"data/images/{job_id}.webp"
     download_image(webp_url, file_path)
 
     # Upload the image to S3
-    upload_to_s3(file_path, BUCKET_NAME, f"{date}/{job_id}/{job_id}.webp", metadata, file_type="webp")
+    upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}/{job_id}.webp", metadata, file_type="webp")
 
     for second in range(20):
         print(f"System: Please wait for {20-second} seconds...")
@@ -152,7 +157,7 @@ while True:
     download_image(jpg_url, file_path)
 
     # Upload the image to S3
-    upload_to_s3(file_path, BUCKET_NAME, f"{date}/{job_id}/{job_id}.jpg", metadata, file_type="jpeg")
+    upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}/{job_id}.jpg", metadata, file_type="jpeg")
 
     print("---------------------------------\n")
     body.send_keys(Keys.ARROW_RIGHT)
