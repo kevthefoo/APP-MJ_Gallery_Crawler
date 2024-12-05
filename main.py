@@ -96,7 +96,7 @@ def update_metadata(file_path, bucket_name, object_name):
 
 # Send Post Request to the MeetJohnny website API
 def send_data():
-    with open('data.json', 'r') as file:
+    with open('data/data.json', 'r') as file:
         data = json.load(file)
 
     url = MEETJOHNNY_API_ENDPOINT  # Replace with your actual endpoint
@@ -152,9 +152,14 @@ while True:
     print(f"Prompt: {prompt}\n")
 
     # Find the parameters
+    ratio = '1:1'
     tags = prompt_box.find_elements(By.TAG_NAME, "button")
     for _ in tags:
         tag_text = _.text.replace("\n", "").strip()
+        if 'ar ' in tag_text:
+            width=tag_text.replace('ar ', '').split(':')[0]
+            height=tag_text.replace('ar ', '').split(':')[1]
+            ratio = f"{width}:{height}"
         if tag_text:
             print(f"Button: {tag_text}")
 
@@ -165,6 +170,7 @@ while True:
             "tags": [_.text.replace("\n", "").strip() for _ in tags],
             "webp_url": webp_url,
             "jpg_url": jpg_url,
+            "ratio": ratio,
             "timestamp": time.time(),
         }
         json.dump(data, f, indent=4)
