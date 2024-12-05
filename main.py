@@ -18,6 +18,7 @@ USER_PROFILE_PATH = os.getenv("USER_PROFILE_PATH")
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 BUCKET_NAME = os.getenv('BUCKET_NAME')
+MEETJOHNNY_API_ENDPOINT = os.getenv('MEETJOHNNY_API_ENDPOINT')
 
 # Launch Chrome in debug mode
 try:
@@ -69,7 +70,6 @@ def download_image(url, file_path):
                 file.write(response.read())
             break
 
-
 # Upload an image to S3
 def upload_to_s3(file_path, bucket_name, object_name, metadata, file_type):
     
@@ -94,6 +94,23 @@ def update_metadata(file_path, bucket_name, object_name):
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {e}\n")
 
+# Send Post Request to the MeetJohnny website API
+def send_data():
+    with open('data.json', 'r') as file:
+        data = json.load(file)
+
+    url = MEETJOHNNY_API_ENDPOINT  # Replace with your actual endpoint
+    headers = {'Content-Type': 'application/json'}
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        print(f"System: Successfully sent POST request. Response: {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"System: Failed to send POST request. Error: {e}")
+
+# --------------------------------------Start Scraping--------------------------------------
+
 first_job_cards = driver.find_element(By.XPATH, "//div[contains(@class, 'container/jobCard')]")
 first_job_cards.click()
 time.sleep(5)
@@ -102,8 +119,15 @@ time.sleep(5)
 
 # Get today's date
 date = datetime.date.today().strftime("%Y-%m-%d")
- 
+
+break_count = 0
 while True:
+    # Break the loop after 10 same jobs founded iterations
+    if break_count >= 10:
+        send_data()
+        print("System: Scraping completed...")
+        break
+
     # Find the image URLs and Job ID
     images = driver.find_elements(By.CSS_SELECTOR, "img.absolute.w-full.h-full")
     webp_url = images[0].get_attribute("src")
@@ -116,6 +140,7 @@ while True:
         data = json.load(f)
     
     if job_id in data:
+        break_count+=1
         print("Job already exists in the database\n---------------------------------\n")
         body.send_keys(Keys.ARROW_RIGHT)
         time.sleep(5)
