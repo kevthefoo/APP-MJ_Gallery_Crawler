@@ -157,7 +157,7 @@ while True:
     for _ in tags:
         tag_text = _.text.replace("\n", "").strip()
         if 'ar ' in tag_text:
-            width=tag_text.replace('ar ', '').split(':')[0]
+            width=tag_text.replace('--ar ', '').split(':')[0]
             height=tag_text.replace('ar ', '').split(':')[1]
             ratio = f"{width}:{height}"
         if tag_text:
@@ -171,7 +171,7 @@ while True:
             "webp_url": webp_url,
             "jpg_url": jpg_url,
             "ratio": ratio,
-            "timestamp": time.time(),
+            "timestamp": int(time.time()),
         }
         json.dump(data, f, indent=4)
 
