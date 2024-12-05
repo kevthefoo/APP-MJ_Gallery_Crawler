@@ -43,7 +43,7 @@ s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_k
 
 # --------------------------------------Start Scraping--------------------------------------
 
-TARGET_URL = "https://www.midjourney.com/explore?tab=top"
+TARGET_URL = "https://www.midjourney.com/"
 driver.get(TARGET_URL)
 
 time.sleep(5)
@@ -54,8 +54,9 @@ def download_image(url, file_path):
     req.add_header('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
     req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7')
     req.add_header('Accept-Language', 'en-US,en;q=0.9')
+    req.add_header('Accept-Encoding', 'gzip, deflate, br, zstd')
     req.add_header('authority', 'cdn.midjourney.com')
-
+ 
     attempt = 0
     for attempt in range(30):
         try:
