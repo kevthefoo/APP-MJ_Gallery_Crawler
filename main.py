@@ -78,6 +78,18 @@ def upload_to_s3(file_path, bucket_name, object_name, metadata, file_type):
                 'ContentType': f'image/{file_type}',
                 'Metadata': metadata
             })
+    except Exception as e:
+        print(f"Error uploading {file_path} to S3: {e}\n")
+    else:
+        print(f"Uploaded {file_path} to {bucket_name}/{object_name}\n")
+    finally:
+        os.remove(file_path)
+        print(f"Deleted local file {file_path}\n")
+
+# Update the metadata
+def update_metadata(file_path, bucket_name, object_name):
+    try:
+        s3.upload_file(file_path, bucket_name, object_name )
         print(f"Uploaded {file_path} to {bucket_name}/{object_name}\n")
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {e}\n")
@@ -159,6 +171,10 @@ while True:
 
     # Upload the image to S3
     upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.jpg", metadata, file_type="jpeg")
+
+    # Update the metadata
+    update_metadata("data/data.json", BUCKET_NAME, 'data.json')
+
 
     print("---------------------------------\n")
     body.send_keys(Keys.ARROW_RIGHT)

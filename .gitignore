@@ -1,2 +1,4 @@
 .env
 data/images
+data/data.json
+__pycache__/
