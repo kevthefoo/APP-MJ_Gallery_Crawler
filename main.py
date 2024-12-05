@@ -65,7 +65,7 @@ def download_image(url, file_path):
             attempt += 1
             time.sleep(5)
         else:
-            print(f"System: Try {attempt+1} times to get the image...\n")  
+            print(f"\nSystem: Try {attempt+1} times to get the image...\n")  
             with open(file_path, 'wb') as file:
                 file.write(response.read())
             break
