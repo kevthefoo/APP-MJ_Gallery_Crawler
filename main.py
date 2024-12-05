@@ -57,7 +57,7 @@ def download_image(url, file_path):
     req.add_header('authority', 'cdn.midjourney.com')
 
     attempt = 0
-    for attempt in range(15):
+    for attempt in range(30):
         try:
             response = urllib.request.urlopen(req)
         except:
@@ -68,7 +68,10 @@ def download_image(url, file_path):
             print(f"\nSystem: Try {attempt+1} times to get the image...\n")  
             with open(file_path, 'wb') as file:
                 file.write(response.read())
-            break
+            return True
+    
+    print(f"System: Failed to download the image {url}\n")
+    return False
 
 # Upload an image to S3
 def upload_to_s3(file_path, bucket_name, object_name, metadata, file_type):
@@ -163,6 +166,8 @@ while True:
         if tag_text:
             print(f"Button: {tag_text}")
 
+    reverse_timestamp = generate_reverse_timestamped_filename()
+    
     with open(f"data/data.json", "w") as f:
         data[job_id] = {
             "job_id": job_id,
@@ -171,6 +176,7 @@ while True:
             "webp_url": webp_url,
             "jpg_url": jpg_url,
             "ratio": ratio,
+            "object_name": f"{reverse_timestamp}/{job_id}",
             "timestamp": int(time.time()),
         }
         json.dump(data, f, indent=4)
@@ -184,14 +190,13 @@ while True:
     }
 
 
-    reverse_timestamp = generate_reverse_timestamped_filename()
-
     # Download the webp image
     file_path = f"data/images/{job_id}.webp"
-    download_image(webp_url, file_path)
+    response = download_image(webp_url, file_path)
 
-    # Upload the image to S3
-    upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.webp", metadata, file_type="webp")
+    if response == True:
+        # Upload the image to S3
+        upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.webp", metadata, file_type="webp")
 
     for second in range(20):
         print(f"System: Please wait for {20-second} seconds...")
@@ -199,14 +204,14 @@ while True:
 
     # Download the jpeg image
     file_path = f"data/images/{job_id}.jpg"
-    download_image(jpg_url, file_path)
+    response = download_image(jpg_url, file_path)
 
-    # Upload the image to S3
-    upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.jpg", metadata, file_type="jpeg")
-
+    if response == True:
+        # Upload the image to S3
+        upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.jpg", metadata, file_type="jpeg")
+   
     # Update the metadata
     update_metadata("data/data.json", BUCKET_NAME, 'data.json')
-
 
     print("---------------------------------\n")
     body.send_keys(Keys.ARROW_RIGHT)
