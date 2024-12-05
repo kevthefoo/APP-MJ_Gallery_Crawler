@@ -165,6 +165,7 @@ while True:
             "tags": [_.text.replace("\n", "").strip() for _ in tags],
             "webp_url": webp_url,
             "jpg_url": jpg_url,
+            "timestamp": time.time(),
         }
         json.dump(data, f, indent=4)
 
