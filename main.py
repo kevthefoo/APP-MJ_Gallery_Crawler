@@ -49,7 +49,7 @@ driver.get(TARGET_URL)
 time.sleep(5)
 
 # Download an image
-def download_image(url, file_path):
+def download_image(url, file_path, job_id):
     req = urllib.request.Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
     req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7')
@@ -70,25 +70,36 @@ def download_image(url, file_path):
             with open(file_path, 'wb') as file:
                 file.write(response.read())
             return True
-    
+        
+    remove_image_from_metadata(job_id)
     print(f"System: Failed to download the image {url}\n")
     return False
 
 # Upload an image to S3
-def upload_to_s3(file_path, bucket_name, object_name, metadata, file_type):
-    
+def upload_to_s3(file_path, bucket_name, object_name, metadata, job_id, file_type):
     try:
         s3.upload_file(file_path, bucket_name, object_name, ExtraArgs={
                 'ContentType': f'image/{file_type}',
                 'Metadata': metadata
             })
     except Exception as e:
+        remove_image_from_metadata(job_id)
         print(f"Error uploading {file_path} to S3: {e}\n")
     else:
         print(f"Uploaded {file_path} to {bucket_name}/{object_name}\n")
     finally:
         os.remove(file_path)
         print(f"Deleted local file {file_path}\n")
+
+# Remove the image from the metadata
+def remove_image_from_metadata(job_id):
+    with open('data/data.json', 'r') as f:
+        data = json.load(f)
+    
+    if job_id in data:
+        del data[job_id]
+        with open('data/data.json', 'w') as file:
+            json.dump(data, file, indent=4)
 
 # Update the metadata
 def update_metadata(file_path, bucket_name, object_name):
@@ -193,11 +204,11 @@ while True:
 
     # Download the webp image
     file_path = f"data/images/{job_id}.webp"
-    response = download_image(webp_url, file_path)
+    response = download_image(webp_url, file_path, job_id)
 
     if response == True:
         # Upload the image to S3
-        upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.webp", metadata, file_type="webp")
+        upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.webp", metadata, job_id, file_type="webp")
 
     for second in range(20):
         print(f"System: Please wait for {20-second} seconds...")
@@ -205,11 +216,11 @@ while True:
 
     # Download the jpeg image
     file_path = f"data/images/{job_id}.jpg"
-    response = download_image(jpg_url, file_path)
+    response = download_image(jpg_url, file_path, job_id)
 
     if response == True:
         # Upload the image to S3
-        upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.jpg", metadata, file_type="jpeg")
+        upload_to_s3(file_path, BUCKET_NAME, f"{reverse_timestamp}/{job_id}.jpg", metadata, job_id, file_type="jpeg")
    
     # Update the metadata
     update_metadata("data/data.json", BUCKET_NAME, 'data.json')
